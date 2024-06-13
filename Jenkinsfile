@@ -1,19 +1,17 @@
 pipeline{
     agent any
     options{
-        timeout(time: 15, unit: "MINUTES")
+        timeout(time: 30, unit: "MINUTES")
         withAWS(credentials: 'aws-terraform-deployent-role', region: 'us-east-1')
     }
     stages{
         stage('Terraform Init'){
             environment {
-                TF_BACKEND_CONFIG = credentials('terraform-backend-conf-file')
+                TF_STATE_BUCKET = credentials('aws-terraform-state-s3-bucket')
             }
             steps{
                 dir('terraform'){
-                    sh 'pwd'
-                    sh 'ls -al'
-                    sh 'terraform init -no-color -backend-config=${TF_BACKEND_CONFIG}'
+                    sh 'terraform init -no-color -backend-config="bucket=${TF_STATE_BUCKET}"'
                 }
             }
         }
