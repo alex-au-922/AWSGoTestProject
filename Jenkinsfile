@@ -10,15 +10,16 @@ pipeline{
                 TF_BACKEND_CONFIG = credentials('terraform-backend-conf-file')
             }
             steps{
-                dir('${env.WORKSPACE}/terraform'){
+                dir('terraform'){
                     sh 'pwd'
+                    sh 'ls -al'
                     sh 'terraform init -no-color -backend-config=${TF_BACKEND_CONFIG}'
                 }
             }
         }
         stage('Terraform Plan'){
             steps{
-                dir('${env.WORKSPACE}/terraform'){
+                dir('terraform'){
                     sh 'terraform plan -no-color'
                 }
             }
@@ -32,7 +33,7 @@ pipeline{
         }
         stage('Terraform Apply'){
             steps{
-                dir('${env.WORKSPACE}/terraform'){
+                dir('terraform'){
                     sh 'terraform apply -auto-approve -no-color'
                 }
             }
