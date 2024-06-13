@@ -6,10 +6,10 @@ pipeline{
     }
     stages{
         stage('Terraform Init'){
+            environment {
+                TF_BACKEND_CONFIG = credentials('terraform-backend-conf-file')
+            }
             steps{
-                environment{
-                    TF_BACKEND_CONFIG = credentials('terraform-backend-conf-file')
-                }
                 dir('${env.WORKSPACE}/terraform'){
                     sh 'terraform init -backend-config=${TF_BACKEND_CONFIG}'
                 }
