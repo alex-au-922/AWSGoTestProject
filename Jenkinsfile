@@ -11,14 +11,15 @@ pipeline{
             }
             steps{
                 dir('${env.WORKSPACE}/terraform'){
-                    sh 'terraform init -backend-config=${TF_BACKEND_CONFIG}'
+                    sh 'pwd'
+                    sh 'terraform init -no-color -backend-config=${TF_BACKEND_CONFIG}'
                 }
             }
         }
         stage('Terraform Plan'){
             steps{
                 dir('${env.WORKSPACE}/terraform'){
-                    sh 'terraform plan'
+                    sh 'terraform plan -no-color'
                 }
             }
         }
@@ -32,7 +33,7 @@ pipeline{
         stage('Terraform Apply'){
             steps{
                 dir('${env.WORKSPACE}/terraform'){
-                    sh 'terraform apply -auto-approve'
+                    sh 'terraform apply -auto-approve -no-color'
                 }
             }
         }
