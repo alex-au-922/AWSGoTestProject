@@ -41,7 +41,7 @@ vpc_config = {
         cidr = "10.0.80.0/20"
       }
     ],
-    private = [
+    innerprivate = [
       {
         az   = "us-east-1a"
         cidr = "10.0.96.0/20"

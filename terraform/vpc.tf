@@ -16,13 +16,23 @@ resource "aws_subnet" "public" {
   }
 }
 
-resource "aws_subnet" "private" {
-  for_each          = { for subnet in var.vpc_config.subnets.private : subnet.az => subnet }
+resource "aws_subnet" "outerprivate" {
+  for_each          = { for subnet in var.vpc_config.subnets.outerprivate : subnet.az => subnet }
   vpc_id            = aws_vpc.main.id
   cidr_block        = each.value.cidr
   availability_zone = each.key
   tags = {
-    Name = "${var.project_prefix}-private-${split("-", each.key)[2]}-${var.env}"
+    Name = "${var.project_prefix}-outerprivate-${split("-", each.key)[2]}-${var.env}"
+  }
+}
+
+resource "aws_subnet" "innerprivate" {
+  for_each          = { for subnet in var.vpc_config.subnets.innerprivate : subnet.az => subnet }
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = each.value.cidr
+  availability_zone = each.key
+  tags = {
+    Name = "${var.project_prefix}-innerprivate-${split("-", each.key)[2]}-${var.env}"
   }
 }
 
@@ -62,13 +72,13 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_route_table_association" "outerprivate" {
-  for_each       = aws_subnet.private
+  for_each       = aws_subnet.outerprivate
   subnet_id      = each.value.id
   route_table_id = aws_route_table.outerprivate.id
 }
 
 resource "aws_route_table_association" "innerprivate" {
-  for_each       = aws_subnet.private
+  for_each       = aws_subnet.innerprivate
   subnet_id      = each.value.id
   route_table_id = aws_route_table.innerprivate.id
 }
@@ -110,13 +120,13 @@ resource "aws_network_acl_association" "public" {
 }
 
 resource "aws_network_acl_association" "outerprivate" {
-  for_each       = aws_subnet.private
+  for_each       = aws_subnet.outerprivate
   subnet_id      = each.value.id
   network_acl_id = aws_network_acl.main.id
 }
 
 resource "aws_network_acl_association" "innerprivate" {
-  for_each       = aws_subnet.private
+  for_each       = aws_subnet.innerprivate
   subnet_id      = each.value.id
   network_acl_id = aws_network_acl.main.id
 }
