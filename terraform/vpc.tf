@@ -2,7 +2,7 @@ resource "aws_vpc" "main" {
   cidr_block         = var.vpc_config.cidr
   enable_dns_support = true
   tags = {
-    Name = "${var.vpc_config.name}-${var.env}"
+    Name = "${var.project_prefix}-${var.env}"
   }
 }
 
@@ -12,7 +12,7 @@ resource "aws_subnet" "public" {
   cidr_block        = each.value
   availability_zone = each.key
   tags = {
-    Name = "${var.vpc_config.name}-public-${split(each.key, "-")[2]}-${var.env}"
+    Name = "${var.project_prefix}-public-${split(each.key, "-")[2]}-${var.env}"
   }
 }
 
@@ -22,7 +22,7 @@ resource "aws_subnet" "private" {
   cidr_block        = each.value
   availability_zone = each.key
   tags = {
-    Name = "${var.vpc_config.name}-private-${split(each.key, "-")[2]}-${var.env}"
+    Name = "${var.project_prefix}-private-${split(each.key, "-")[2]}-${var.env}"
   }
 }
 
