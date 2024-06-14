@@ -1,5 +1,10 @@
 pipeline{
-    agent any
+    agent {
+        docker {
+            image 'hashicorp/terraform:1.8.4'
+            args '--entrypoint="" -u root'
+        }
+    }
     options{
         ansiColor('xterm')
         disableConcurrentBuilds()
@@ -11,9 +16,10 @@ pipeline{
         TF_AWS_DEPLOY_ROLE_ARN = credentials('aws-deployment-role-arn')
     }
     stages{
-        stage('Checkout') {
+        stage('Init') {
             steps {
                 checkout scm
+                sh 'terraform --version'
             }
         }
         stage('Terraform Init'){
