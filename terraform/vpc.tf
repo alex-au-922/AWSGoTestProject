@@ -53,7 +53,8 @@ resource "aws_network_acl" "main" {
 }
 
 resource "aws_network_acl_rule" "default_ingress" {
-  for_each       = var.vpc_config.network_acls_ports.ingress
+  for_each = { for port in var.vpc_config.network_acls_ports.ingress : port => port }
+
   network_acl_id = aws_network_acl.main.id
   protocol       = "tcp"
   rule_number    = (index(var.vpc_config.network_acls_ports.ingress, each.value) + 1) * 100
@@ -65,7 +66,7 @@ resource "aws_network_acl_rule" "default_ingress" {
 }
 
 resource "aws_network_acl_rule" "default_egress" {
-  for_each = var.vpc_config.network_acls_ports.egress
+  for_each = { for port in var.vpc_config.network_acls_ports.egress : port => port }
 
   network_acl_id = aws_network_acl.main.id
   protocol       = "tcp"
