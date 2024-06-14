@@ -27,7 +27,7 @@ vpc_config = {
         cidr = "10.0.32.0/20"
       }
     ],
-    private = [
+    outerprivate = [
       {
         az   = "us-east-1a"
         cidr = "10.0.48.0/20"
@@ -39,6 +39,20 @@ vpc_config = {
       {
         az   = "us-east-1c"
         cidr = "10.0.80.0/20"
+      }
+    ],
+    private = [
+      {
+        az   = "us-east-1a"
+        cidr = "10.0.96.0/20"
+      },
+      {
+        az   = "us-east-1b"
+        cidr = "10.0.112.0/20"
+      },
+      {
+        az   = "us-east-1c"
+        cidr = "10.0.128.0/20"
       }
     ]
   }
