@@ -3,6 +3,11 @@ variable "deploy_role_arn" {
   description = "Provided by Jenkins CI/CD"
 }
 
+variable "project_prefix" {
+  type        = string
+  description = "Project Prefix"
+}
+
 variable "env" {
   type        = string
   description = "Environment"

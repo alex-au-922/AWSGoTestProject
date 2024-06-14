@@ -1,5 +1,17 @@
+project_prefix = "aws-go"
+
+env = "dev"
+
 vpc_config = {
   cidr = "10.0.0.0/16"
+  network_acls = {
+    ingress_ports = [
+      "22", "80", "443"
+    ],
+    egress_ports = [
+      "80", "443"
+    ]
+  }
   subnets = {
     public = [
       {
