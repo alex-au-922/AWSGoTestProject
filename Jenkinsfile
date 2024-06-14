@@ -1,6 +1,7 @@
 pipeline{
     agent any
     options{
+        ansiColor('xterm')
         disableConcurrentBuilds()
         timeout(time: 30, unit: "MINUTES")
         withAWS(credentials: 'aws-terraform-deployent-role', region: 'us-east-1')
