@@ -15,7 +15,6 @@ variable "env" {
 
 variable "vpc_config" {
   type = object({
-    name               = string
     cidr               = string
     network_acls_ports = map(list(string))
     subnets = map(list(object({
