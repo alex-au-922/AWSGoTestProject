@@ -1,6 +1,7 @@
 pipeline{
     agent any
     options{
+        concurrentBuild(false)
         timeout(time: 30, unit: "MINUTES")
     }
     environment {
@@ -29,7 +30,9 @@ pipeline{
                 withAWS(credentials: 'aws-terraform-deployent-role', region: 'us-east-1') {
                     dir('terraform'){
                         sh 'terraform plan -no-color \
-                            -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}"'
+                            -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}" \
+                            -lock=false -out=tfplan'
+                        stash includes: 'tfplan', name: 'tfplan'
                     }
                 }
             }
@@ -45,7 +48,8 @@ pipeline{
             steps{
                 withAWS(credentials: 'aws-terraform-deployent-role', region: 'us-east-1') {
                     dir('terraform'){
-                        sh 'terraform apply -auto-approve -no-color \
+                        unstash 'tfplan'
+                        sh 'terraform apply -auto-approve -no-color tfplan \
                             -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}"'
                     }
                 }
