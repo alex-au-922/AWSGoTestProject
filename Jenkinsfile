@@ -15,8 +15,6 @@ pipeline{
         }
         stage('Terraform Init'){
             steps{
-                // debug
-                sh 'aws sts get-caller-identity --output json'
                 withAWS(credentials: 'aws-terraform-deployent-role', region: 'us-east-1') {
                     dir('terraform'){
                         sh 'terraform init -no-color \
