@@ -1,7 +1,7 @@
 pipeline{
     agent {
         docker {
-            image 'hashicorp/terraform:1.8.4'
+            image 'hashicorp/terraform:1.8.5'
             args '--entrypoint="" -u root'
         }
     }
@@ -52,8 +52,7 @@ pipeline{
             steps{
                 dir('terraform') {
                     unstash 'tfplan'
-                    sh 'terraform apply tfplan \
-                        -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}"'
+                    sh 'terraform apply tfplan'
                 }
             }
         }
