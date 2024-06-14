@@ -1,8 +1,9 @@
 pipeline{
     agent any
     options{
-        concurrentBuild(false)
+        disableConcurrentBuilds(abortPrevious: true)
         timeout(time: 30, unit: "MINUTES")
+        withAWS(credentials: 'aws-terraform-deployent-role', region: 'us-east-1')
     }
     environment {
         TF_STATE_BUCKET = credentials('aws-terraform-state-s3-bucket')
@@ -16,24 +17,20 @@ pipeline{
         }
         stage('Terraform Init'){
             steps{
-                withAWS(credentials: 'aws-terraform-deployent-role', region: 'us-east-1') {
-                    dir('terraform'){
-                        sh 'terraform init -no-color \
-                            -backend-config="bucket=${TF_STATE_BUCKET}" \
-                            -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}"'
-                    }
+                dir('terraform') {
+                    sh 'terraform init -no-color \
+                        -backend-config="bucket=${TF_STATE_BUCKET}" \
+                        -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}"'
                 }
             }
         }
         stage('Terraform Plan'){
             steps{
-                withAWS(credentials: 'aws-terraform-deployent-role', region: 'us-east-1') {
-                    dir('terraform'){
-                        sh 'terraform plan -no-color \
-                            -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}" \
-                            -lock=false -out=tfplan'
-                        stash includes: 'tfplan', name: 'tfplan'
-                    }
+                dir('terraform') {
+                    sh 'terraform plan -no-color \
+                        -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}" \
+                        -lock=false -out=tfplan'
+                    stash includes: 'tfplan', name: 'tfplan'
                 }
             }
         }
@@ -46,12 +43,10 @@ pipeline{
         }
         stage('Terraform Apply'){
             steps{
-                withAWS(credentials: 'aws-terraform-deployent-role', region: 'us-east-1') {
-                    dir('terraform'){
-                        unstash 'tfplan'
-                        sh 'terraform apply -auto-approve -no-color tfplan \
-                            -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}"'
-                    }
+                dir('terraform') {
+                    unstash 'tfplan'
+                    sh 'terraform apply -auto-approve -no-color tfplan \
+                        -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}"'
                 }
             }
         }
