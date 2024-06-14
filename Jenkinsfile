@@ -2,23 +2,37 @@ pipeline{
     agent any
     options{
         timeout(time: 30, unit: "MINUTES")
-        withAWS(credentials: 'aws-terraform-deployent-role', region: 'us-east-1')
+    }
+    environment {
+        TF_STATE_BUCKET = credentials('aws-terraform-state-s3-bucket')
+        TF_AWS_DEPLOY_ROLE_ARN = credentials('aws-deployment-role-arn')
     }
     stages{
-        stage('Terraform Init'){
-            environment {
-                TF_STATE_BUCKET = credentials('aws-terraform-state-s3-bucket')
+        stage('Checkout') {
+            steps {
+                checkout scm
             }
+        }
+        stage('Terraform Init'){
             steps{
-                dir('terraform'){
-                    sh 'terraform init -no-color -backend-config="bucket=${TF_STATE_BUCKET}"'
+                // debug
+                sh 'aws sts get-caller-identity --output json'
+                withAWS(credentials: 'aws-terraform-deployent-role', region: 'us-east-1') {
+                    dir('terraform'){
+                        sh 'terraform init -no-color \
+                            -backend-config="bucket=${TF_STATE_BUCKET}" \
+                            -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}"'
+                    }
                 }
             }
         }
         stage('Terraform Plan'){
             steps{
-                dir('terraform'){
-                    sh 'terraform plan -no-color'
+                withAWS(credentials: 'aws-terraform-deployent-role', region: 'us-east-1') {
+                    dir('terraform'){
+                        sh 'terraform plan -no-color \
+                            -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}"'
+                    }
                 }
             }
         }
@@ -31,8 +45,11 @@ pipeline{
         }
         stage('Terraform Apply'){
             steps{
-                dir('terraform'){
-                    sh 'terraform apply -auto-approve -no-color'
+                withAWS(credentials: 'aws-terraform-deployent-role', region: 'us-east-1') {
+                    dir('terraform'){
+                        sh 'terraform apply -auto-approve -no-color \
+                            -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}"'
+                    }
                 }
             }
         }
