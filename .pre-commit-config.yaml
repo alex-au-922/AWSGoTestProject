@@ -1,0 +1,14 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+      - id: check-yaml
+      - id: trailing-whitespace
+  - repo: local
+    hooks:
+      - id: terraform_fmt
+        name: Run terraform fmt
+        entry: terraform fmt -recursive terraform
+        language: system
+        pass_filenames: false
+        always_run: true

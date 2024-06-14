@@ -45,10 +45,10 @@ pipeline{
             steps{
                 dir('terraform') {
                     unstash 'tfplan'
-                    sh 'terraform apply -auto-approve -no-color tfplan \
+                    sh 'terraform apply tfplan -no-color \
                         -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}"'
                 }
             }
         }
-    }   
+    }
 }
