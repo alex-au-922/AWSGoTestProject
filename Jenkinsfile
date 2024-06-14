@@ -1,7 +1,7 @@
 pipeline{
     agent any
     options{
-        disableConcurrentBuilds(abortPrevious: true)
+        disableConcurrentBuilds()
         timeout(time: 30, unit: "MINUTES")
         withAWS(credentials: 'aws-terraform-deployent-role', region: 'us-east-1')
     }
@@ -18,7 +18,7 @@ pipeline{
         stage('Terraform Init'){
             steps{
                 dir('terraform') {
-                    sh 'terraform init -no-color \
+                    sh 'terraform init \
                         -backend-config="bucket=${TF_STATE_BUCKET}" \
                         -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}"'
                 }
@@ -27,7 +27,7 @@ pipeline{
         stage('Terraform Plan'){
             steps{
                 dir('terraform') {
-                    sh 'terraform plan -no-color \
+                    sh 'terraform plan \
                         -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}" \
                         -lock=false -out=tfplan'
                     stash includes: 'tfplan', name: 'tfplan'
@@ -45,7 +45,7 @@ pipeline{
             steps{
                 dir('terraform') {
                     unstash 'tfplan'
-                    sh 'terraform apply tfplan -no-color \
+                    sh 'terraform apply tfplan \
                         -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}"'
                 }
             }
