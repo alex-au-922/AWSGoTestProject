@@ -4,11 +4,11 @@ env = "dev"
 
 vpc_config = {
   cidr = "10.0.0.0/16"
-  network_acls = {
-    ingress_ports = [
+  network_acls_ports = {
+    ingress = [
       "22", "80", "443"
     ],
-    egress_ports = [
+    egress = [
       "80", "443"
     ]
   }

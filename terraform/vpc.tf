@@ -53,10 +53,10 @@ resource "aws_network_acl" "main" {
 }
 
 resource "aws_network_acl_rule" "default_ingress" {
-  for_each       = var.vpc_config.network_acls.ingress_ports
+  for_each       = var.vpc_config.network_acls_ports.ingress
   network_acl_id = aws_network_acl.main.id
   protocol       = "tcp"
-  rule_number    = (index(var.vpc_config.network_acls.ingress_ports, each.value) + 1) * 100
+  rule_number    = (index(var.vpc_config.network_acls_ports.ingress, each.value) + 1) * 100
   egress         = false
   rule_action    = "allow"
   cidr_block     = "0.0.0.0/0"
@@ -65,11 +65,11 @@ resource "aws_network_acl_rule" "default_ingress" {
 }
 
 resource "aws_network_acl_rule" "default_egress" {
-  for_each = var.vpc_config.network_acls.egress_ports
+  for_each = var.vpc_config.network_acls_ports.egress
 
   network_acl_id = aws_network_acl.main.id
   protocol       = "tcp"
-  rule_number    = (index(var.vpc_config.network_acls.egress_ports, each.value) + 1) * 100
+  rule_number    = (index(var.vpc_config.network_acls_ports.egress, each.value) + 1) * 100
   egress         = true
   rule_action    = "allow"
   cidr_block     = "0.0.0.0/0"
