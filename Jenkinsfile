@@ -29,11 +29,18 @@ pipeline{
                             stage("Build ${directory}") {
                                 agent {docker {image 'golang:1.22-alpine3.18'}}
                                 steps {
-                                    dir(directory) {
-                                        sh 'apk add upx'
-                                        sh 'go test ./... -v'
-                                        sh 'go build -o bin/main'
-                                        sh 'upx bin/main'
+                                    script {
+                                        try {
+                                            dir(directory) {
+                                                sh 'apk add upx'
+                                                sh 'go test ./... -v'
+                                                sh 'go build -o bin/main'
+                                                sh 'upx bin/main'
+                                            }
+                                        } catch (e) {
+                                            echo "Error building ${directory}"
+                                            throw(e)
+                                        }
                                     }
                                 }
                             }
