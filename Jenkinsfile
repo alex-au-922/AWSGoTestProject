@@ -3,7 +3,6 @@ def tf_plan_status = 0
 pipeline{
     agent any
     options{
-        timestamps()
         ansiColor('xterm')
         disableConcurrentBuilds()
         timeout(time: 30, unit: "MINUTES")
@@ -15,6 +14,7 @@ pipeline{
     }
     stages{
         stage('Backend Build') {
+            agent {docker {image 'golang:1.22-alpine3.18'}}
             steps {
                 script {
                     def subfolders = sh(returnStdout: true, script: 'ls -d backend/*').trim().split('\n')
@@ -22,7 +22,6 @@ pipeline{
                     parallel subfolders.collectEntries { directory ->
                         [ (directory) : {
                             stage("Build ${directory}") {
-                                agent {docker {image 'golang:1.22-alpine3.18'}}
                                 script {
                                     try {
                                         dir(directory) {
