@@ -26,10 +26,10 @@ pipeline{
                     echo "Subfolders: ${subfolders}"
                     parallel subfolders.collectEntries { directory ->
                         [ (directory) : {
-                            stage("Build ${dir}") {
+                            stage("Build ${directory}") {
                                 agent {docker {image 'golang:1.22-alpine3.18'}}
                                 steps {
-                                    dir('backend/' + dir) {
+                                    dir(directory) {
                                         sh 'apk add upx'
                                         sh 'go test ./... -v'
                                         sh 'go build -o bin/main'
