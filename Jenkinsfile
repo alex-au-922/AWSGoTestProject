@@ -1,13 +1,5 @@
 def tf_plan_status = 0
 
-def getBackendDirs() {
-    def dirs = []
-    new File('backend').eachDir { dir ->
-        dirs.add(dir.name)
-    }
-    return dirs
-}
-
 pipeline{
     agent {
         docker {
@@ -30,7 +22,9 @@ pipeline{
         stage('Backend Build') {
             steps {
                 script {
-                    parallel getBackendDirs().collectEntries { directory ->
+                    def subfolders = sh(returnStdout: true, script: 'ls -d backend/*').trim().split(System.getProperty("line.separator"))
+                    echo "Subfolders: ${subfolders}"
+                    parallel subfolders.collectEntries { directory ->
                         [ (directory) : {
                             stage("Build ${dir}") {
                                 agent {docker {image 'golang:1.22-alpine3.18'}}
