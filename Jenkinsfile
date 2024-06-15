@@ -23,19 +23,17 @@ pipeline{
                     parallel subfolders.collectEntries { directory ->
                         [ (directory) : {
                             stage("Build ${directory}") {
-                                steps {
-                                    script {
-                                        try {
-                                            dir(directory) {
-                                                sh 'apk add upx'
-                                                sh 'go test ./... -v'
-                                                sh 'go build -o bin/main'
-                                                sh 'upx bin/main'
-                                            }
-                                        } catch (e) {
-                                            echo "Error building ${directory}"
-                                            throw(e)
+                                script {
+                                    try {
+                                        dir(directory) {
+                                            sh 'apk add upx'
+                                            sh 'go test ./... -v'
+                                            sh 'go build -o bin/main'
+                                            sh 'upx bin/main'
                                         }
+                                    } catch (e) {
+                                        echo "Error building ${directory}"
+                                        throw(e)
                                     }
                                 }
                             }
