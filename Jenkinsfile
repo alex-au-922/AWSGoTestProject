@@ -25,7 +25,9 @@ pipeline{
                                 script {
                                     try {
                                         dir(directory) {
-                                            sh 'apk add upx --no-cache'
+                                            lock('UPX') {
+                                                sh 'apk add upx --no-cache'
+                                            }
                                             sh 'go test ./... -v'
                                             sh 'go build -o bin/main'
                                             sh 'upx bin/main'
@@ -121,9 +123,18 @@ pipeline{
                 }
             }
         }
-        stage('Clean Up') {
-            steps{
+        post {
+            always {
+                cleanWs()
+                dir("${env.WORKSPACE}@tmp") {
                 deleteDir()
+                }
+                dir("${env.WORKSPACE}@script") {
+                deleteDir()
+                }
+                dir("${env.WORKSPACE}@script@tmp") {
+                deleteDir()
+                }
             }
         }
     }
