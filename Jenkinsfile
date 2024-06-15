@@ -1,11 +1,7 @@
 def tf_plan_status = 0
 
 pipeline{
-    agent {
-        node {
-            customWorkspace '/var/lib/jenkins/workspace'
-        }
-    }
+    agent any
     options{
         ansiColor('xterm')
         disableConcurrentBuilds()
@@ -127,18 +123,18 @@ pipeline{
                 }
             }
         }
-        post {
-            always {
-                cleanWs()
-                dir("${env.WORKSPACE}@tmp") {
-                deleteDir()
-                }
-                dir("${env.WORKSPACE}@script") {
-                deleteDir()
-                }
-                dir("${env.WORKSPACE}@script@tmp") {
-                deleteDir()
-                }
+    }
+    post {
+        always {
+            cleanWs()
+            dir("${env.WORKSPACE}@tmp") {
+            deleteDir()
+            }
+            dir("${env.WORKSPACE}@script") {
+            deleteDir()
+            }
+            dir("${env.WORKSPACE}@script@tmp") {
+            deleteDir()
             }
         }
     }
