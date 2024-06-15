@@ -1,3 +1,13 @@
+def tf_plan_status = 0
+
+def getBackendDirs() {
+    def dirs = []
+    new File('backend').eachDir { dir ->
+        dirs.add(dir.name)
+    }
+    return dirs
+}
+
 pipeline{
     agent {
         docker {
@@ -6,6 +16,7 @@ pipeline{
         }
     }
     options{
+        timestamps()
         ansiColor('xterm')
         disableConcurrentBuilds()
         timeout(time: 30, unit: "MINUTES")
@@ -16,16 +27,34 @@ pipeline{
         TF_AWS_DEPLOY_ROLE_ARN = credentials('aws-deployment-role-arn')
     }
     stages{
-        stage('Init') {
+        stage('Backend Build') {
             steps {
-                checkout scm
-                sh 'terraform --version'
+                script {
+                    parallel getBackendDirs().collectEntries { directory ->
+                        [ (directory) : {
+                            stage("Build ${dir}") {
+                                agent {docker {image 'golang:1.22-alpine3.18'}}
+                                steps {
+                                    dir('backend/' + dir) {
+                                        sh 'apk add upx'
+                                        sh 'go test ./... -v'
+                                        sh 'go build -o bin/main'
+                                        sh 'upx bin/main'
+                                    }
+                                }
+                            }
+                        }]
+                    }
+                }
+                dir('backend') {
+                    stash includes: '**/bin/main', name: 'builds'
+                }
             }
         }
         stage('Terraform Init'){
             steps{
                 dir('terraform') {
-                    sh 'terraform init \
+                   sh 'terraform init \
                         -backend-config="bucket=${TF_STATE_BUCKET}" \
                         -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}"'
                 }
@@ -33,15 +62,36 @@ pipeline{
         }
         stage('Terraform Plan'){
             steps{
+                unstash 'builds'
                 dir('terraform') {
-                    sh 'terraform plan \
+                    tf_plan_status = sh(
+                        returnStatus: true,
+                        script: 'terraform plan \
                         -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}" \
-                        -lock=false -out=tfplan'
-                    stash includes: 'tfplan', name: 'tfplan'
+                        -lock=false -out=tfplan -detailed-exitcode'
+                    )
+                    script {
+                        switch(tf_plan_status) {
+                            case 0:
+                                echo 'No changes detected, skipping apply'
+                                break
+                            case 1:
+                                error 'Terraform plan failed'
+                                break
+                            case 2:
+                                stash includes: 'tfplan', name: 'tfplan'
+                                break
+                            default:
+                                error 'Unknown error'
+                        }
+                    }
                 }
             }
         }
         stage('Manual Approval'){
+            when {
+                expression { tf_plan_status == 2 }
+            }
             steps{
                 timeout(time: 15, unit: "MINUTES") {
                     input message: 'Do you want to approve the deployment?', ok: 'Yes'
@@ -49,7 +99,11 @@ pipeline{
             }
         }
         stage('Terraform Apply'){
+            when {
+                expression { tf_plan_status == 2 }
+            }
             steps{
+                unstash 'builds'
                 dir('terraform') {
                     unstash 'tfplan'
                     sh 'terraform apply tfplan'
