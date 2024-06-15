@@ -64,13 +64,13 @@ pipeline{
             steps{
                 unstash 'builds'
                 dir('terraform') {
-                    tf_plan_status = sh(
-                        returnStatus: true,
-                        script: 'terraform plan \
-                        -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}" \
-                        -lock=false -out=tfplan -detailed-exitcode'
-                    )
                     script {
+                        tf_plan_status = sh(
+                            returnStatus: true,
+                            script: 'terraform plan \
+                            -var "deploy_role_arn=${TF_AWS_DEPLOY_ROLE_ARN}" \
+                            -lock=false -out=tfplan -detailed-exitcode'
+                        )
                         switch(tf_plan_status) {
                             case 0:
                                 echo 'No changes detected, skipping apply'
