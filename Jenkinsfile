@@ -15,7 +15,6 @@ pipeline{
     }
     stages{
         stage('Backend Build') {
-            agent {docker {image 'golang:1.22-alpine3.18'}}
             steps {
                 script {
                     def subfolders = sh(returnStdout: true, script: 'ls -d backend/*').trim().split('\n')
@@ -23,10 +22,11 @@ pipeline{
                     parallel subfolders.collectEntries { directory ->
                         [ (directory) : {
                             stage("Build ${directory}") {
+                                agent {docker {image 'golang:1.22-alpine3.18'}}
                                 script {
                                     try {
                                         dir(directory) {
-                                            sh 'apk add upx'
+                                            sh 'apk add upx --no-cache'
                                             sh 'go test ./... -v'
                                             sh 'go build -o bin/main'
                                             sh 'upx bin/main'
