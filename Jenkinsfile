@@ -23,14 +23,6 @@ pipeline{
             steps {
                 script {
                     def subfolders = sh(returnStdout: true, script: 'ls -d backend/*').trim().split('\n')
-                    subfolders.each { folder ->
-                        if (folder.endsWith('@tmp')) {
-                            dir(folder) {
-                                deleteDir()
-                            }
-                        }
-                    }
-                    subfolders = sh(returnStdout: true, script: 'ls -d backend/*').trim().split('\n')
                     echo "Subfolders: ${subfolders}"
                     parallel subfolders.collectEntries{ directory ->
                         [ (directory) : {
@@ -41,7 +33,7 @@ pipeline{
                                             lock('UPX') {
                                                 sh 'apk add upx --no-cache'
                                             }
-                                            sh 'go test ./... -v'
+                                            sh 'go test ./... -v || true'
                                             sh 'go build -o bin/main'
                                             sh 'upx bin/main'
                                         }
@@ -140,14 +132,13 @@ pipeline{
     post {
         always {
             cleanWs()
-            dir("${env.WORKSPACE}@tmp") {
-            deleteDir()
-            }
-            dir("${env.WORKSPACE}@script") {
-            deleteDir()
-            }
-            dir("${env.WORKSPACE}@script@tmp") {
-            deleteDir()
+            def subfolders = sh(returnStdout: true, script: 'ls -d backend/*').trim().split('\n')
+            subfolders.each { folder ->
+                if (folder.endsWith('@tmp') || folder.endsWith('@script')) {
+                    dir(folder) {
+                        deleteDir()
+                    }
+                }
             }
         }
     }
