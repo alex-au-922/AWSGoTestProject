@@ -1,7 +1,11 @@
 def tf_plan_status = 0
 
 pipeline{
-    agent any
+    agent {
+        node {
+            customWorkspace '/var/lib/jenkins/workspace'
+        }
+    }
     options{
         ansiColor('xterm')
         disableConcurrentBuilds()
