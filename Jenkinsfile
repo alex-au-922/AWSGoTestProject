@@ -1,12 +1,7 @@
 def tf_plan_status = 0
 
 pipeline{
-    agent {
-        docker {
-            image 'hashicorp/terraform:1.8.5'
-            args '--entrypoint="" -u root'
-        }
-    }
+    agent any
     options{
         timestamps()
         ansiColor('xterm')
@@ -53,6 +48,12 @@ pipeline{
             }
         }
         stage('Terraform Init'){
+            agent {
+                docker {
+                    image 'hashicorp/terraform:1.8.5'
+                    args '--entrypoint="" -u root'
+                }
+            }
             steps{
                 dir('terraform') {
                    sh 'terraform init \
@@ -62,6 +63,12 @@ pipeline{
             }
         }
         stage('Terraform Plan'){
+            agent {
+                docker {
+                    image 'hashicorp/terraform:1.8.5'
+                    args '--entrypoint="" -u root'
+                }
+            }
             steps{
                 unstash 'builds'
                 dir('terraform') {
@@ -100,6 +107,12 @@ pipeline{
             }
         }
         stage('Terraform Apply'){
+            agent {
+                docker {
+                    image 'hashicorp/terraform:1.8.5'
+                    args '--entrypoint="" -u root'
+                }
+            }
             when {
                 expression { tf_plan_status == 2 }
             }
