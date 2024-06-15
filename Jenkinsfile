@@ -22,7 +22,15 @@ pipeline{
             agent {docker {image 'golang:1.22-alpine3.18'}}
             steps {
                 script {
-                    def subfolders = sh(returnStdout: true, script: 'ls -d backend/*').trim().split('\n').findAll { !it.contains('@tmp') }
+                    def subfolders = sh(returnStdout: true, script: 'ls -d backend/*').trim().split('\n')
+                    subfolders.each { folder ->
+                        if (folder.endsWith('@tmp')) {
+                            dir(folder) {
+                                deleteDir()
+                            }
+                        }
+                    }
+                    subfolders = sh(returnStdout: true, script: 'ls -d backend/*').trim().split('\n')
                     echo "Subfolders: ${subfolders}"
                     parallel subfolders.collectEntries{ directory ->
                         [ (directory) : {
