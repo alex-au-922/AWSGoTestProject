@@ -22,7 +22,7 @@ pipeline{
         stage('Backend Build') {
             steps {
                 script {
-                    def subfolders = sh(returnStdout: true, script: 'ls -d backend/*').trim().split(System.getProperty("line.separator"))
+                    def subfolders = sh(returnStdout: true, script: 'ls -d backend/*').trim().split('\n')
                     echo "Subfolders: ${subfolders}"
                     parallel subfolders.collectEntries { directory ->
                         [ (directory) : {
